@@ -1,0 +1,41 @@
+---
+- name: Install packages
+  apt: pkg={{ item }} state=present
+  with_items:
+    - zsh
+    - python-virtualenv
+    - git
+    - python-dev
+    - libjpeg-dev
+    - libfreetype6
+    - libfreetype6-dev
+    - zlib1g-dev
+
+# Create symlinks for libjpeg crap (PIL needs this)
+- file: src=/usr/lib/x86_64-linux-gnu/libz.so
+        dest=/usr/lib/libz.so
+        state=link
+  register: libz_link
+- file: src=/usr/lib/x86_64-linux-gnu/libjpeg.so
+        dest=/usr/lib/libjpeg.so
+        state=link
+  register: libjpeg_link
+- file: src=/usr/lib/x86_64-linux-gnu/libfreetype.so
+        dest=/usr/lib/libfreetype.so
+        state=link
+  register: libfreetype_link
+- name: Run ldconfig
+  command: ldconfig
+  when: libz_link.changed or libjpeg_link.changed or libfreetype_link.changed
+
+- name: Create crrr group
+  group: name=crrr state=present
+
+- name: Create crrr user
+  user: name=crrr group=crrr shell=/bin/zsh
+
+- name: Install the CRRR app
+  sudo: True
+  sudo_user: crrr
+  pip: name='git+https://github.com/SirScott/crrr.git#egg=CRRR'
+       virtualenv=/home/crrr/venv

@@ -1,0 +1,9 @@
+---
+- name: Set the authorized key
+  authorized_key: user=root key="{{ lookup('file', '/home/scott/.ssh/id_rsa.pub') }}"
+
+- name: Permit ssh access with a key only
+  lineinfile: dest=/etc/ssh/sshd_config regexp="^#?PermitRootLogin" line="PermitRootLogin without-password"
+  notify: Restart sshd
+
+- meta: flush_handlers

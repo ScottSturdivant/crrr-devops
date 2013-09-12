@@ -1,0 +1,8 @@
+---
+- hosts: crrr
+  user: root
+  roles:
+    - ssh_access
+    - postgresql
+    - nginx
+    - crrr
