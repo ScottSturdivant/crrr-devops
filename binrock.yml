@@ -1,0 +1,34 @@
+---
+- hosts: binrock
+  user: scott
+  gather_facts: no
+  roles:
+    - mysql_dump
+
+- hosts: crrr
+  user: root
+  gather_facts: no
+  tasks:
+    - name: Copy db dumps to crrr.org
+      copy: src={{ item }} dest=/tmp/
+      with_fileglob:
+        - dumps/*.csv
+
+    - name: Dump and recreate the database tables
+      command: "{{ webapps_dir }}/{{ app_name }}/venv/bin/python {{ webapps_dir }}/{{ app_name }}/src/crrr/scripts/populate_tables.py --recreate"
+      environment:
+        PYTHONPATH: "{{ webapps_dir }}/{{ app_name }}/src/"
+        CRRR_SETTINGS: "{{ webapps_dir }}/{{ app_name }}/config.py"
+
+    - name: Import the data into the database
+      command: "{{ webapps_dir }}/{{ app_name }}/venv/bin/python {{ webapps_dir }}/{{ app_name }}/src/crrr/scripts/populate_tables.py --{{ item.cmd_name }} /tmp/{{ item.fname }}"
+      environment:
+        PYTHONPATH: "{{ webapps_dir }}/{{ app_name }}/src/"
+        CRRR_SETTINGS: "{{ webapps_dir }}/{{ app_name }}/config.py"
+      with_items:
+        - cmd_name: app-csv
+          fname: Apps.csv
+        - cmd_name: dog-csv
+          fname: Dog_info.csv
+        - cmd_name: user-csv
+          fname: auth.csv
