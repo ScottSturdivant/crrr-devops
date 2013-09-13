@@ -1,0 +1,8 @@
+---
+- name: Dump the information out of the existing databases
+  shell: mysql -u crrrescue -p{{ lookup('password', '../../../credentials/mysql') }} crrrescue -B -e "SELECT * FROM {{ item }};" | sed '1d;s/\t/","/g;s/^/"/;s/$/"/;s/\n//g' > {{ item }}.csv
+  with_items: binrock_databases
+
+- name: Pull down the .csv dumped files locally
+  fetch: src={{ item }}.csv dest=dumps/ flat=yes
+  with_items: binrock_databases

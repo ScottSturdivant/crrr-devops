@@ -1,0 +1,5 @@
+---
+binrock_databases:
+  - Dog_info
+  - auth
+  - Apps
