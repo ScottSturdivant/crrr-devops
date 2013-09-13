@@ -2,5 +2,17 @@
 - name: Install the nginx package
   apt: name=nginx state=installed
 
+- name: Set the default site redirect
+  copy: src=default dest=/etc/nginx/sites-available/default 
+  notify: restart nginx
+
+- name: Set the site file for the app
+  template: src=nginx-site.conf.j2 dest=/etc/nginx/sites-available/{{ app_name }}.conf
+  notify: restart nginx
+
+- name: Enable the app's nginx site
+  file: src=/etc/nginx/sites-available/{{ app_name }}.conf dest=/etc/nginx/sites-enabled/{{ app_name }}.conf state=link
+  notify: restart nginx
+
 - name: Start nginx
   service: name=nginx state=started enabled=true
