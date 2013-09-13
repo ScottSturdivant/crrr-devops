@@ -3,13 +3,15 @@
   apt: pkg={{ item }} state=present
   with_items:
     - zsh
-    - python-virtualenv
     - git
     - python-dev
     - libjpeg-dev
     - libfreetype6
     - libfreetype6-dev
     - zlib1g-dev
+    - python-setuptools
+    - python-virtualenv
+    - supervisor
 
 # Create symlinks for libjpeg crap (PIL needs this)
 - file: src=/usr/lib/x86_64-linux-gnu/libz.so
@@ -34,8 +36,41 @@
 - name: Create crrr user
   user: name=crrr group=crrr shell=/bin/zsh
 
-- name: Install the CRRR app
+- name: ensure web app directory
+  file: state=directory dest={{ webapps_dir }}/{{ app_name }} owner=crrr group=crrr
+
+- name: ensure log directory
+  file: state=directory dest={{ webapps_dir }}/{{ app_name }}/logs owner=crrr group=crrr
+
+- name: set the app configuration file
+  template: src=config.py.j2 dest={{ webapps_dir }}/{{ app_name }}/config.py owner=crrr group=crrr
+  notify: restart supervisor
+
+- name: Deploy code from the repository
   sudo: True
   sudo_user: crrr
-  pip: name='git+https://github.com/SirScott/crrr.git#egg=CRRR'
-       virtualenv=/home/crrr/venv
+  git: repo={{ repo_url }} dest={{ webapps_dir }}/{{ app_name }}/src remote={{ repo_remote }} version={{ repo_version }}
+
+- name: Install dependencies into virtualenv
+  sudo: True
+  sudo_user: crrr
+  pip: requirements={{ webapps_dir }}/{{ app_name }}/src/requirements.txt virtualenv={{ webapps_dir }}/{{ app_name }}/venv state=present
+
+- name: Install uwsgi into the virtualenv
+  sudo: True
+  sudo_user: crrr
+  pip: name=uwsgi
+       virtualenv={{ webapps_dir }}/{{ app_name }}/venv
+
+- name: Install psycopg2 into the virtualenv
+  sudo: True
+  sudo_user: crrr
+  pip: name=psycopg2
+       virtualenv={{ webapps_dir }}/{{ app_name }}/venv
+
+- name: Create the supervisord.conf file
+  copy: src=supervisord.conf dest=/etc/supervisor/ 
+
+- name: Create the supervisor conf file for the app
+  template: src=supervisor.conf.j2 dest=/etc/supervisor/conf.d/{{ app_name }}.conf
+  notify: restart supervisor

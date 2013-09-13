@@ -1,0 +1,23 @@
+[program:{{ app_name }}]
+command={{ webapps_dir }}/{{ app_name}}/venv/bin/uwsgi
+  --uid crrr
+  --gid crrr
+  --socket /tmp/{{ app_name }}.sock
+  --logto {{ webapps_dir }}/{{ app_name }}/logs/app.log
+  --home {{ webapps_dir }}/{{ app_name }}/venv
+  --pythonpath {{ webapps_dir }}/{{ app_name }}/src
+  --wsgi-file {{ webapps_dir }}/{{ app_name }}/src/{{ wsgi_file }}
+  --callable {{ wsgi_callable }}
+  --max-requests 1000
+  --master
+  --processes 2
+  --chmod
+{% if 'dev' in app_name %}
+  --py-autoreload 1
+  --enable-threads
+{% endif %}
+autostart=true
+autorestart=true
+redirect_stderr=true
+stopsignal=QUIT
+environment=CRRR_SETTINGS="{{ webapps_dir }}/{{ app_name }}/config.py"
