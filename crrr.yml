@@ -1,6 +1,7 @@
 ---
 - hosts: crrr
   user: root
+  gather_facts: no
   roles:
     - ssh_access
     - postgresql
