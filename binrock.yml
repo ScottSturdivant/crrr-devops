@@ -2,12 +2,16 @@
 - hosts: binrock
   user: scott
   gather_facts: no
+  tags:
+    - database
   roles:
     - mysql_dump
 
 - hosts: crrr
   user: root
   gather_facts: no
+  tags:
+    - database
   tasks:
     - name: Copy db dumps to crrr.org
       copy: src={{ item }} dest=/tmp/
@@ -32,3 +36,21 @@
           fname: Dog_info.csv
         - cmd_name: user-csv
           fname: auth.csv
+
+- hosts: binrock
+  user: scott
+  gather_facts: no
+  tags:
+    - images
+  tasks:
+    - name: rsync images from binrock to localhost
+      local_action: command rsync -ravz {{ inventory_hostname }}:/home/scott/crrrescue/web/images .
+
+- hosts: crrr
+  user: root
+  gather_facts: no
+  tags:
+    - images
+  tasks:
+    - name: rsync images from localhost to crrr.org
+      local_action: command rsync -ravz images root@{{ inventory_hostname }}:/tmp/
