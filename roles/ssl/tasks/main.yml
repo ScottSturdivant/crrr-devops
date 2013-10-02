@@ -1,0 +1,10 @@
+---
+- name: Place the private key
+  copy: src=../../../credentials/ssl/crrr.key dest=/etc/ssl/private/crrr.key mode=0640
+  tags:
+    - ssl
+
+- name: Place the cert
+  copy: src=crrr.org.chained.crt dest=/etc/ssl/certs/
+  tags:
+    - ssl
