@@ -1,0 +1,46 @@
+server {
+        listen          80;
+        server_name mail.crrr.org;
+ 
+        location / {
+                rewrite ^ https://mail.crrr.org/ permanent;
+        }
+ 
+        location ~ \.php$ {
+                fastcgi_pass   unix:{{ iredmail_socket }};
+                fastcgi_index  index.php;
+                include fastcgi_params;
+                fastcgi_param SCRIPT_FILENAME /usr/share/apache2$fastcgi_script_name;
+        }
+ 
+ 
+   }
+ 
+    server {
+        listen       443;
+        server_name  mail.crrr.org;
+ 
+        location / {
+            root   /usr/share/apache2/roundcubemail;
+            index  index.php index.html;
+        }
+ 
+         location ~ \.php$ {
+            root            /usr/share/apache2/;
+            include         fastcgi_params;
+            fastcgi_pass    unix:{{ iredmail_socket }};
+            fastcgi_index   index.php;
+            fastcgi_param   SCRIPT_FILENAME /usr/share/apache2/roundcubemail/$fastcgi_script_name;
+            fastcgi_param SERVER_NAME $http_host;
+            fastcgi_ignore_client_abort on;
+        }
+ 
+        ssl                  on;
+        ssl_certificate      /etc/ssl/certs/crrr.org.chained.crt;
+        ssl_certificate_key  /etc/ssl/private/crrr.key;
+        ssl_session_timeout  5m;
+        #enables SSLv3/TLSv1, but not SSLv2 which is weak and should no longer be used.
+        ssl_protocols SSLv3 TLSv1;
+        #Disables all weak ciphers
+        ssl_ciphers ALL:!aNULL:!ADH:!eNULL:!LOW:!EXP:RC4+RSA:+HIGH:+MEDIUM;
+    }

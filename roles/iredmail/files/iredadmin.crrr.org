@@ -1,0 +1,36 @@
+# Sets up our iRedAdmin website for usage.
+server
+{
+	# By default we listen on all ips including ipv6 on port 443.  We only respond to the server name here.
+	listen	443;
+	server_name	iredadmin.crrr.org;
+
+	# Our logs files.
+	access_log	/var/log/nginx/iredmail-access.log;
+	error_log	/var/log/nginx/iredmail-error.log;
+
+	# Startup SSL using iRedMails certs.
+	ssl on;
+	ssl_certificate	/etc/ssl/certs/crrr.org.chained.crt;
+	ssl_certificate_key	/etc/ssl/private/crrr.key;
+	ssl_session_timeout	5m;
+
+	# Alias's our /static to the static location iredadmin
+	location /static	{ alias /usr/share/apache2/iredadmin/static/;}
+
+	# This passes through all other requests to the pyhton service.
+	location /
+	{
+		proxy_set_header        Host    $host;
+		proxy_set_header        X-Real-IP       $remote_addr;
+		proxy_pass  		http://127.0.0.1:7878/;
+        }
+}
+
+# This redirects all port 80 requests to 443 like magic.
+server
+{
+	listen		80;
+	server_name	iredadmin.crrr.org;
+	rewrite		^(.*)	https://$server_name$1	permanent;
+}

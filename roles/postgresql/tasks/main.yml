@@ -7,6 +7,15 @@
     - python-psycopg2
     - postgresql-server-dev-9.1
 
+- name: Set the postgres user's password
+  sudo: True
+  sudo_user: postgres
+  postgresql_user: user=postgres
+                   password="{{ lookup('password', '../../../credentials/postgresql/postgres length=15') }}"
+
+- name: Set the pgpass file
+  template: src=pgpass.j2 dest=/var/lib/postgresql/.pgpass owner=postgres group=postgres mode=0600
+
 - name: Create crrr postgresql databases
   sudo: True
   sudo_user: postgres
@@ -17,6 +26,6 @@
   sudo_user: postgres
   postgresql_user: db={{ app_name }}
                    user={{ db_user }}
-                   password="{{ lookup('password', '../../../credentials/postgresql length=15') }}"
+                   password="{{ lookup('password', '../../../credentials/postgresql/crrr length=15') }}"
                    priv=ALL
                    role_attr_flags=SUPERUSER

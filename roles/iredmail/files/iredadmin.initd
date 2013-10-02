@@ -1,0 +1,64 @@
+#!/bin/sh -e
+
+### BEGIN INIT INFO
+# Provides:          iredadmin
+# Required-Start:    $network $syslog
+# Required-Stop:     $network $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Control iredadmin daemon.
+# Description: Control iredadmin daemon.
+### END INIT INFO
+
+DAEMON="/usr/share/apache2/iredadmin/iredadmin.py"
+DAEMON_PATH="/usr/share/apache2/iredadmin"
+DAEMON_USER="www-data"
+DAEMON_NAME="iredadmin"
+DAEMON_ARGS="7878"
+PIDFILE=/var/run/iredadmin.pid
+
+PATH="/sbin:/bin:/usr/sbin:/usr/bin"
+
+test -x $DAEMON || exit 0
+
+. /lib/lsb/init-functions
+
+d_start () {
+    log_daemon_msg "Starting system $DEAMON_NAME Daemon"
+    start-stop-daemon --start --background --quiet -d $DAEMON_PATH --pidfile $PIDFILE --make-pidfile --user $DAEMON_USER --exec $DAEMON -- $DAEMON_ARGS
+    log_end_msg $?
+}
+
+d_stop () {
+    log_daemon_msg "Stopping system $DAEMON_NAME Daemon"
+    start-stop-daemon --stop --pidfile $PIDFILE
+    log_end_msg $?
+}
+
+case "$1" in
+
+    start|stop)
+        d_${1}
+        ;;
+
+    restart|reload|force-reload)
+        d_stop
+        d_start
+        ;;
+
+    force-stop)
+        d_stop
+        killall -q $DAEMON_NAME || true
+        sleep 2
+        killall -q -9 $DAEMON_NAME || true
+        ;;
+
+    status)
+        status_of_proc "$DAEMON_NAME" "$DAEMON" "system-wide $DEAMON_NAME" && exit 0 || exit $?
+        ;;
+    *)
+        echo "Usage: /etc/init.d/$DAEMON_NAME {start|stop|force-stop|restart|reload|force-reload|status}"
+        exit 1
+        ;;
+esac
+exit 0

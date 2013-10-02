@@ -1,0 +1,31 @@
+---
+- name: install php5-fpm
+  apt: name=php5-fpm state=installed
+
+- name: Set the fpm file to handle iredmail
+  template: src=iredmail.fpm.conf.j2 dest=/etc/php5/fpm/pool.d/iredmail.conf
+  notify: restart fpm
+
+- name: Make sure php5-fpm is started and set to do so at boot
+  service: name=php5-fpm state=started enabled=yes
+
+- name: Set an init.d script to launch iredadmin daemon
+  copy: src=iredadmin.initd dest=/etc/init.d/iredadmin mode=0755
+
+- name: Make sure iredadmin is running and set to do so at boot
+  service: name=iredadmin state=started enabled=yes
+
+- name: Create a site in nginx to serve up roundecube
+  template: src=mail.crrr.org.j2 dest=/etc/nginx/sites-available/mail.crrr.org
+  notify: restart nginx
+
+- name: Enable the roundecube site
+  file: src=/etc/nginx/sites-available/mail.crrr.org dest=/etc/nginx/sites-enabled/mail.crrr.org state=link
+  notify: restart nginx
+
+- name: Create a site in nginx to serve up iredadmin
+  file: src=iredadmin.crrr.org dest=/etc/nginx/sites-available/
+  notify: restart nginx
+
+- name: Enable the iredadmin site
+  file: src=/etc/nginx/sites-available/iredadmin.crrr.org dest=/etc/nginx/sites-enabled/iredadmin.crrr.org state=link
