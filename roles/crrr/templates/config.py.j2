@@ -1,9 +1,10 @@
 SQLALCHEMY_DATABASE_URI="postgresql://crrr:{{ lookup('password','credentials/postgresql length=15') }}@localhost/{{ app_name }}"
 SECRET_KEY="adsf"
-LOG_SMTP_SERVER='smtp.gmail.com'
-LOG_SMTP_PORT=587
-LOG_FROM_ADDR='scott.sturdivant@gmail.com'
-LOG_TO_ADDRS=['scott.sturdivant@gmail.com']
-LOG_USERNAME='scott.sturdivant@gmail.com'
-LOG_PASSWORD='{{ lookup('password','credentials/gmail') }}'
+MAIL_SERVER='localhost'
+MAIL_PORT=25
+MAIL_USE_TLS=False
+MAIL_DEFAULT_SENDER='webmaster@crrr.org'
+ADMINS=frozenset(['scott.sturdivant@gmail.com'])
+MAIL_USERNAME=None
+MAIL_PASSWORD=None
 LOG_FILE_NAME='{{ webapps_dir }}/{{ app_name }}/logs/{{ app_name }}.log'
