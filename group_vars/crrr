@@ -6,3 +6,4 @@ webapps_dir: /home/crrr
 app_name: dev.crrr.org
 wsgi_file: wsgi.py
 wsgi_callable: app
+iredmail_socket: /var/run/fpm-iredmail.sock
