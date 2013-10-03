@@ -15,5 +15,9 @@ server {
         expires 1y;
         add_header Cache-Control "public";
     }
+
+    location /favicon.ico {
+        root {{ webapps_dir }}/{{ app_name }}/src/crrr/static/images;
+    }
     
 }
