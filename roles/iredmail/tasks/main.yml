@@ -9,8 +9,55 @@
 - name: Make sure php5-fpm is started and set to do so at boot
   service: name=php5-fpm state=started enabled=yes
 
+- name: Grab the iredmail source to install
+  get_url: url=https://bitbucket.org/zhb/iredmail/downloads/iRedMail-{{ iredmail_version }}.tar.bz2
+           dest=/tmp/
+
+- name: Extract iredmail
+  command: tar xvf iRedMail-{{ iredmail_version }}.tar.bz2 creates=/tmp/iRedMail-{{ iredmail_version }} chdir=/tmp
+
+- name: Place the configuration file
+  template: src=iRedMail.config.j2 dest=/tmp/iRedMail-{{ iredmail_version }}/config
+
+- name: Install iRedMail
+  command: bash iRedMail.sh
+           chdir=/tmp/iRedMail-{{ iredmail_version }}
+           creates=/usr/share/apache2/roundcubemail
+  environment:
+    AUTO_USE_EXISTING_CONFIG_FILE: y
+    AUTO_INSTALL_WITHOUT_CONFIRM: y
+    AUTO_CLEANUP_REMOVE_SENDMAIL: y
+    AUTO_CLEANUP_REMOVE_MOD_PYTHON: y
+    AUTO_CLEANUP_REPLACE_FIREWALL_RULES: n
+    AUTO_CLEANUP_RESTART_IPTABLES: n
+    AUTO_CLEANUP_REPLACE_MYSQL_CONFIG: y
+    AUTO_CLEANUP_RESTART_POSTFIX: n
+
+- name: Make sure there's an FQDN in the hosts file
+  template: src=hosts.j2 dest=/etc/hosts
+
 - name: Set an init.d script to launch iredadmin daemon
   copy: src=iredadmin.initd dest=/etc/init.d/iredadmin mode=0755
+
+- name: Configure dovecot
+  template: src=dovecot.conf.j2 dest=/etc/dovecot/dovecot.conf
+  notify: restart dovecot
+
+- name: Configure postfix
+  template: src=main.cf.j2 dest=/etc/postfix/main.cf
+  notify: restart postfix
+
+- name: Configure roundcubemail's database
+  template: src=db.inc.php.j2 dest=/usr/share/apache2/roundcubemail/config/db.inc.php
+
+- name: Set the roundcubemail db users's password to match
+  sudo: yes
+  sudo_user: postgres
+  postgresql_user: user=roundcubemail
+                   password={{ lookup('password', '../../../credentials/iredmail/rcm_db') }}
+
+- name: Configure iredadmin's database
+  template: src=settings.ini.j2 dest=/usr/share/apache2/iredadmin/settings.ini
 
 - name: Make sure iredadmin is running and set to do so at boot
   service: name=iredadmin state=started enabled=yes
