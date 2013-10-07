@@ -1,5 +1,5 @@
-SQLALCHEMY_DATABASE_URI="postgresql://crrr:{{ lookup('password','credentials/postgresql length=15') }}@localhost/{{ app_name }}"
-SECRET_KEY="adsf"
+SQLALCHEMY_DATABASE_URI="postgresql://crrr:{{ lookup('password','credentials/postgresql/crrr length=15') }}@localhost/{{ app_name }}"
+SECRET_KEY="{{ lookup('password', 'credentials/crrr/secret_key length=15') }}"
 MAIL_SERVER='localhost'
 MAIL_PORT=25
 MAIL_USE_TLS=False
@@ -8,3 +8,4 @@ ADMINS=frozenset(['scott.sturdivant@gmail.com'])
 MAIL_USERNAME=None
 MAIL_PASSWORD=None
 LOG_FILE_NAME='{{ webapps_dir }}/{{ app_name }}/logs/{{ app_name }}.log'
+GOOGLE_ANALYTICS_ID='{{ lookup('password', 'credentials/google_analytics') }}'
