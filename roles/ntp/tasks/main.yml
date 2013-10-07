@@ -1,0 +1,15 @@
+---
+- name: Install ntp
+  apt: name=ntp state=latest
+
+- name: Set the timezone
+  copy: src=timezone dest=/etc/timezone
+  register: tz
+
+- name: Reconfigure the tzdata
+  command: dpkg-reconfigure --frontend noninteractive tzdata
+  when: tz.changed
+  notify: restart cron
+
+- name: Start the ntp service
+  service: name=ntp state=started enabled=yes
