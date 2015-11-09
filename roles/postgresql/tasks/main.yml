@@ -5,7 +5,7 @@
     - postgresql
     - postgresql-client
     - python-psycopg2
-    - postgresql-server-dev-9.1
+    - postgresql-server-dev-9.4
 
 - name: Set the postgres user's password
   sudo: True
@@ -19,12 +19,12 @@
 - name: Create crrr postgresql databases
   sudo: True
   sudo_user: postgres
-  postgresql_db: name={{ app_name }}
+  postgresql_db: name={{ app_name|replace('.', '_') }}
 
 - name: Create crrr postgresql user
   sudo: True
   sudo_user: postgres
-  postgresql_user: db={{ app_name }}
+  postgresql_user: db={{ app_name|replace('.', '_') }}
                    user={{ db_user }}
                    password="{{ lookup('password', '../../../credentials/postgresql/crrr length=15') }}"
                    priv=ALL
