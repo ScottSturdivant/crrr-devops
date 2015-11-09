@@ -54,3 +54,6 @@
   tasks:
     - name: rsync images from localhost to crrr.org
       local_action: command rsync -ravz images root@{{ inventory_hostname }}:{{ webapps_dir }}/{{ app_name }}/src/crrr/static/
+    - apt: name=ImageMagick state=installed
+    - name: Recreate thumbnails
+      script: re-thumbnail.sh
