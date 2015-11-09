@@ -2,6 +2,8 @@
 - hosts: crrr
   user: root
   gather_facts: no
+  pre_tasks:
+      - raw: test -f /usr/bin/python || apt-get install -y python
   roles:
     - ssh_access
     - ntp
