@@ -4,6 +4,7 @@
   gather_facts: no
   pre_tasks:
       - raw: test -f /usr/bin/python || apt-get install -y python
+      - raw: test -f /usr/lib/python2.7/dist-packages/apt/__init__.py || apt-get install -y python-apt
   roles:
     - ssh_access
     - ntp
