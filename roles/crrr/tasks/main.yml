@@ -12,6 +12,7 @@
     - python-setuptools
     - python-virtualenv
     - supervisor
+    - build-essential
 
 # Create symlinks for libjpeg crap (PIL needs this)
 - file: src=/usr/lib/x86_64-linux-gnu/libz.so
